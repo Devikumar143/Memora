@@ -1,7 +1,11 @@
 package com.memora.ui.components
 
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -31,6 +35,29 @@ fun MemoryCard(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
+    
+    // Launch logic
+    val onCardClick = {
+        try {
+            val intent = if (item.contentText.contains("http") || item.contentText.contains("www.")) {
+                // Extract URL if it's embedded in text
+                val url = extractUrl(item.contentText)
+                Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            } else {
+                context.packageManager.getLaunchIntentForPackage(item.sourceApp)
+            }
+            
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else {
+                Toast.makeText(context, "Could not open this app", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error opening app: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     val (appName, appIcon) = remember(item.sourceApp) {
         if (item.sourceApp == "Clipboard") {
             "Clipboard" to Icons.Default.Assignment
@@ -48,7 +75,8 @@ fun MemoryCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable { onCardClick() },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
@@ -132,6 +160,12 @@ fun MemoryCard(
             }
         }
     }
+}
+
+private fun extractUrl(text: String): String {
+    val regex = "(https?://[^\\s]+)".toRegex()
+    val match = regex.find(text)
+    return match?.value ?: text
 }
 
 private fun formatTimestamp(timestamp: Long): String {
