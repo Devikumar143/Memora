@@ -269,8 +269,12 @@ class FloatingSearchService : Service() {
             y = 100
         }
 
-        windowManager.addView(composeView, params)
-        floatingView = composeView
+        try {
+            windowManager.addView(composeView, params)
+            floatingView = composeView
+        } catch (e: Exception) {
+            Log.e("Memora", "Failed to add floating view: ${e.message}")
+        }
     }
 
     private fun openFullSearch() {
@@ -298,19 +302,23 @@ class FloatingSearchService : Service() {
 
 @Composable
 fun FloatingButton(onClick: () -> Unit) {
-    Box(
+    Surface(
         modifier = Modifier
-            .size(56.dp)
-            .padding(8.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primary)
+            .size(64.dp)
+            .padding(4.dp)
             .clickable { onClick() },
-        contentAlignment = Alignment.Center
+        shape = CircleShape,
+        color = Color(0xFF001F3F), // Navy
+        border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFFFD700)), // Gold Border
+        shadowElevation = 8.dp
     ) {
-        Icon(
-            imageVector = Icons.Default.Search,
-            contentDescription = "Search",
-            tint = Color.White
-        )
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search",
+                tint = Color(0xFFFFD700), // Gold Icon
+                modifier = Modifier.size(32.dp)
+            )
+        }
     }
 }
