@@ -6,7 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.memora.data.model.MemoryItem
 
-@Database(entities = [MemoryItem::class], version = 1, exportSchema = false)
+@Database(entities = [MemoryItem::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class MemoryDatabase : RoomDatabase() {
     abstract fun memoryDao(): MemoryDao
@@ -21,7 +21,9 @@ abstract class MemoryDatabase : RoomDatabase() {
                     context.applicationContext,
                     MemoryDatabase::class.java,
                     "memora_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }
