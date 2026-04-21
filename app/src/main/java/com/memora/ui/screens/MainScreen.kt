@@ -48,13 +48,13 @@ fun MainScreen(
                 actions = {
                     IconButton(onClick = { viewModel.clearAll() }) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.filled.Delete,
+                            imageVector = Icons.Default.Delete,
                             contentDescription = "Clear All",
                             tint = Color.White.copy(alpha = 0.2f)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
+                colors = TopAppBarDefaults.smallTopAppBarColors(
                     containerColor = Color(0xFF000000)
                 )
             )
