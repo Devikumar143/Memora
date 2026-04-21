@@ -44,13 +44,13 @@ fun MemoryCard(
             .clip(MaterialTheme.shapes.large)
             .clickable { handleCardClick(context, item) },
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF001F3F).copy(alpha = 0.9f) // luxury navy
+            containerColor = Color(0xFF000000) // Pure Black
         ),
         border = androidx.compose.foundation.BorderStroke(
-            1.dp, 
-            Color(0xFFFFD700).copy(alpha = 0.4f) // gold border
+            0.5.dp, 
+            Color(0xFF4A4A4A) // Hairline Grey
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column {
             // Header: Category & Time
@@ -61,25 +61,17 @@ fun MemoryCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    shape = CircleShape,
-                    color = Color(0xFFFFD700).copy(alpha = 0.15f),
-                    border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFFFD700).copy(alpha = 0.5f))
-                ) {
-                    Text(
-                        text = item.category?.uppercase() ?: "GENERAL",
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFFFFD700),
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-                }
+                Text(
+                    text = item.category?.lowercase() ?: "general",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.4f),
+                    letterSpacing = 0.5.sp
+                )
                 
                 Text(
                     text = formatTimestamp(item.timestamp),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.5f)
+                    color = Color.White.copy(alpha = 0.2f)
                 )
             }
 
@@ -153,42 +145,24 @@ fun MemoryCard(
 
 @Composable
 fun IntelligenceHeader(recapCount: Int) {
-    Surface(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        shape = MaterialTheme.shapes.large,
-        color = Color(0xFFFFD700).copy(alpha = 0.05f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.2f))
+            .padding(vertical = 24.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Daily Recap",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color(0xFFFFD700),
-                    fontWeight = FontWeight.ExtraBold
-                )
-                Text(
-                    text = "You captured $recapCount memories today.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.7f)
-                )
-            }
-            // Smart Icon
-            Surface(
-                shape = CircleShape,
-                color = Color(0xFFFFD700),
-                modifier = Modifier.size(40.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text("AI", fontWeight = FontWeight.Black, fontSize = 12.sp, color = Color(0xFF001F3F))
-                }
-            }
-        }
+        Text(
+            text = "Your Second Brain",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color.White,
+            fontWeight = FontWeight.Light,
+            letterSpacing = (-0.5).sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Today: $recapCount memories indexed.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White.copy(alpha = 0.4f)
+        )
     }
 }
 

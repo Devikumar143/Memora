@@ -28,36 +28,29 @@ fun MainScreen(
     val searchResults by viewModel.searchResults.collectAsState()
 
     Scaffold(
-        containerColor = Color(0xFF001F3F), // Full Navy background
+        containerColor = Color(0xFF000000), // Pure Black background
         topBar = {
             TopAppBar(
                 title = { 
-                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = R.drawable.app_logo_premium),
-                            contentDescription = "Memora Logo",
-                            modifier = Modifier.size(32.dp).clip(CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Memora",
-                            color = Color(0xFFFFD700),
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Black,
-                            letterSpacing = 2.sp
-                        )
-                    }
+                    Text(
+                        text = "memora",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Light,
+                        letterSpacing = 2.sp
+                    )
                 },
                 actions = {
                     IconButton(onClick = { viewModel.clearAll() }) {
                         Icon(
                             imageVector = androidx.compose.material.icons.filled.Delete,
                             contentDescription = "Clear All",
-                            tint = Color.White.copy(alpha = 0.4f)
+                            tint = Color.White.copy(alpha = 0.2f)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF001F3F)
+                    containerColor = Color(0xFF000000)
                 )
             )
         }
@@ -83,12 +76,12 @@ fun MainScreen(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChanged(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search your Brain...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFFFFD700)) },
+                placeholder = { Text("search...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.White.copy(alpha = 0.3f)) },
                 shape = MaterialTheme.shapes.medium,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color(0xFFFFD700),
-                    unfocusedBorderColor = Color(0xFFFFD700).copy(alpha = 0.3f),
+                    focusedBorderColor = Color.White.copy(alpha = 0.5f),
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
                     textColor = Color.White
                 )
             )
@@ -117,9 +110,9 @@ fun MainScreen(
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
                         } else null,
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFFFFD700).copy(alpha = 0.2f),
-                            selectedLabelColor = Color(0xFFFFD700),
-                            labelColor = Color.White.copy(alpha = 0.6f)
+                            selectedContainerColor = Color.White.copy(alpha = 0.1f),
+                            selectedLabelColor = Color.White,
+                            labelColor = Color.White.copy(alpha = 0.3f)
                         )
                     )
                 }
@@ -129,9 +122,9 @@ fun MainScreen(
             
             Text(
                 text = "Discovery",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color(0xFFFFD700),
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.White.copy(alpha = 0.3f),
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
             )
             
             Spacer(modifier = Modifier.height(8.dp))
