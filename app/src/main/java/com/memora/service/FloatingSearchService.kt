@@ -49,7 +49,7 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import org.jsoup.Jsoup
 
 @AndroidEntryPoint
-class FloatingSearchService : Service() {
+class FloatingSearchService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 
     @Inject lateinit var memoryDao: MemoryDao
     private val serviceScope = CoroutineScope(Dispatchers.IO)
@@ -59,14 +59,33 @@ class FloatingSearchService : Service() {
     private var floatingView: View? = null
     private lateinit var screenshotObserver: android.database.ContentObserver
 
+    // Lifecycle/Registry properties
+    private val lifecycleRegistry = LifecycleRegistry(this)
+    private val savedStateRegistryController = SavedStateRegistryController.create(this)
+    private val store = ViewModelStore()
+
+    override fun getLifecycle(): Lifecycle = lifecycleRegistry
+    override val viewModelStore: ViewModelStore get() = store
+    override val savedStateRegistry: SavedStateRegistry get() = savedStateRegistryController.savedStateRegistry
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
+        
+        // Android 14 Requirement: Start foreground practically instantly
+        startForegroundService()
+        
+        // Initialize State Registries
+        savedStateRegistryController.performAttach()
+        savedStateRegistryController.performRestore(null)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         
-        startForegroundService()
         setupClipboardListener()
         setupScreenshotObserver()
         showFloatingButton()
@@ -231,32 +250,9 @@ class FloatingSearchService : Service() {
             }
         }
 
-        // Lifecycle, ViewModelStore, and SavedStateRegistry setup for ComposeView in Service
-        val lifecycleOwner = object : LifecycleOwner {
-            private val registry = LifecycleRegistry(this)
-            override val lifecycle: Lifecycle get() = registry
-            init {
-                registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-                registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-            }
-        }
-
-        val viewModelStoreOwner = object : ViewModelStoreOwner {
-            override val viewModelStore = ViewModelStore()
-        }
-
-        val savedStateRegistryOwner = object : SavedStateRegistryOwner {
-            override val lifecycle: Lifecycle get() = lifecycleOwner.lifecycle
-            private val controller = SavedStateRegistryController.create(this).apply {
-                performAttach()
-                performRestore(null)
-            }
-            override val savedStateRegistry: SavedStateRegistry get() = controller.savedStateRegistry
-        }
-
-        composeView.setViewTreeLifecycleOwner(lifecycleOwner)
-        composeView.setViewTreeViewModelStoreOwner(viewModelStoreOwner)
-        composeView.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
+        composeView.setViewTreeLifecycleOwner(this)
+        composeView.setViewTreeViewModelStoreOwner(this)
+        composeView.setViewTreeSavedStateRegistryOwner(this)
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -296,6 +292,10 @@ class FloatingSearchService : Service() {
     }
 
     override fun onDestroy() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        store.clear()
         super.onDestroy()
         floatingView?.let { windowManager.removeView(it) }
     }
