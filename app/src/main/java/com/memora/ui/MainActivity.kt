@@ -32,6 +32,19 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        startFloatingService()
+    }
+
+    private fun startFloatingService() {
+        if (Settings.canDrawOverlays(this)) {
+            val intent = Intent(this, com.memora.service.FloatingSearchService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        }
     }
 
     private fun checkPermissions() {

@@ -58,16 +58,43 @@ fun MainScreen(
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            LazyColumn(
-                modifier = Modifier.weight(1f)
-            ) {
-                items(searchResults) { item ->
-                    MemoryCard(
-                        item = item,
-                        onDelete = { viewModel.deleteMemory(item) }
-                    )
+            if (searchResults.isEmpty()) {
+                EmptyStateView()
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(searchResults) { item ->
+                        MemoryCard(
+                            item = item,
+                            onDelete = { viewModel.deleteMemory(item) }
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun EmptyStateView() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "No memories yet!",
+            style = MaterialTheme.typography.headlineSmall
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Try copying some text or waiting for a notification to arrive.",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = androidx.compose.ui.textAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
