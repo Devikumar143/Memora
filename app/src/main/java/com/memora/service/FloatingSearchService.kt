@@ -23,6 +23,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
+import androidx.savedstate.SavedStateRegistry
+import androidx.savedstate.SavedStateRegistryController
+import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import com.memora.ui.theme.MemoraTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,17 +53,32 @@ class FloatingSearchService : Service() {
             }
         }
 
-        // Lifecycle and SavedStateRegistry setup for ComposeView in Service
+        // Lifecycle, ViewModelStore, and SavedStateRegistry setup for ComposeView in Service
         val lifecycleOwner = object : LifecycleOwner {
-            private val lifecycle = LifecycleRegistry(this)
-            override val lifecycle: Lifecycle = lifecycle
-            init { lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_CREATE); lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_RESUME) }
+            private val registry = LifecycleRegistry(this)
+            override val lifecycle: Lifecycle get() = registry
+            init {
+                registry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+                registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+            }
         }
+
+        val viewModelStoreOwner = object : ViewModelStoreOwner {
+            override val viewModelStore = ViewModelStore()
+        }
+
+        val savedStateRegistryOwner = object : SavedStateRegistryOwner {
+            private val controller = SavedStateRegistryController.create(this)
+            override val lifecycle: Lifecycle get() = lifecycleOwner.lifecycle
+            override val savedStateRegistry: SavedStateRegistry get() = controller.savedStateRegistry
+            init {
+                controller.performRestore(null)
+            }
+        }
+
         ViewTreeLifecycleOwner.set(composeView, lifecycleOwner)
-        ViewTreeSavedStateRegistryOwner.set(composeView, object : SavedStateRegistryOwner {
-            override val lifecycle = lifecycleOwner.lifecycle
-            override val savedStateRegistry = SavedStateRegistryController.create(this).apply { performRestore(null) }.savedStateRegistry
-        })
+        ViewTreeViewModelStoreOwner.set(composeView, viewModelStoreOwner)
+        ViewTreeSavedStateRegistryOwner.set(composeView, savedStateRegistryOwner)
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
