@@ -88,7 +88,7 @@ class FloatingSearchService : Service(), LifecycleOwner, ViewModelStoreOwner, Sa
         
         setupClipboardListener()
         setupScreenshotObserver()
-        showFloatingButton()
+        // showFloatingButton() // Removed as requested
     }
 
     private fun startForegroundService() {
@@ -213,16 +213,38 @@ class FloatingSearchService : Service(), LifecycleOwner, ViewModelStoreOwner, Sa
     private fun saveClipboardMemory(text: String) {
         serviceScope.launch {
             var displayTitle = text
+            var description: String? = null
+            var thumbnail: String? = null
+            var category: String? = "General"
             val tags = mutableListOf("copied")
             
-            // Check if it's a URL
+            // Smart Tagger: Basic categorization
+            val lowerText = text.lowercase()
+            when {
+                lowerText.contains("amazon") || lowerText.contains("shop") || lowerText.contains("product") -> category = "Shopping"
+                lowerText.contains("instagram") || lowerText.contains("twitter") || lowerText.contains("x.com") || lowerText.contains("facebook") -> category = "Social"
+                lowerText.contains("wiki") || lowerText.contains("medium.com") || lowerText.contains("article") -> category = "Research"
+                text.startsWith("http") -> category = "Web"
+            }
+
+            // Rich Link Enrichment
             if (text.startsWith("http") || text.contains("www.")) {
                 tags.add("link")
                 try {
-                    val doc = Jsoup.connect(text).get()
-                    val title = doc.title()
-                    if (title.isNotEmpty()) {
-                        displayTitle = title
+                    val doc = Jsoup.connect(text).timeout(5000).get()
+                    
+                    // Fetch OG Metadata
+                    val ogTitle = doc.select("meta[property=og:title]").attr("content")
+                    val ogDesc = doc.select("meta[property=og:description]").attr("content")
+                    val ogImage = doc.select("meta[property=og:image]").attr("content")
+                    
+                    if (ogTitle.isNotEmpty()) displayTitle = ogTitle
+                    if (ogDesc.isNotEmpty()) description = ogDesc
+                    if (ogImage.isNotEmpty()) thumbnail = ogImage
+                    
+                    // Fallback to standard meta tags
+                    if (description.isNullOrEmpty()) {
+                        description = doc.select("meta[name=description]").attr("content")
                     }
                 } catch (e: Exception) {
                     Log.e("Memora", "Link enrichment failed: ${e.message}")
@@ -234,10 +256,13 @@ class FloatingSearchService : Service(), LifecycleOwner, ViewModelStoreOwner, Sa
                 sourceApp = "Clipboard",
                 contentType = "clipboard",
                 tags = tags,
-                metadata = if (displayTitle != text) text else null // Store raw URL in metadata if enriched
+                description = description,
+                thumbnailUrl = thumbnail,
+                category = category,
+                metadata = if (displayTitle != text) text else null
             )
             memoryDao.insertMemory(item)
-            Log.d("Memora", "Saved clipboard memory: $displayTitle")
+            Log.d("Memora", "Saved intelligent memory: $displayTitle ($category)")
         }
     }
 

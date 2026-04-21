@@ -15,7 +15,10 @@ data class MemoryItem(
     val timestamp: Long = System.currentTimeMillis(),
     val tags: List<String> = emptyList(),
     val extractedText: String? = null, // OCR text result
-    val metadata: String? = null // JSON string
+    val description: String? = null,   // Summary/Snippet
+    val thumbnailUrl: String? = null,  // Link/Image preview
+    val category: String? = null,      // Smart bucket (Social, Shopping, etc)
+    val metadata: String? = null       // JSON string
 )
 
 enum class ContentType {

@@ -6,7 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.memora.data.model.MemoryItem
 
-@Database(entities = [MemoryItem::class], version = 2, exportSchema = false)
+@Database(entities = [MemoryItem::class], version = 3, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class MemoryDatabase : RoomDatabase() {
     abstract fun memoryDao(): MemoryDao

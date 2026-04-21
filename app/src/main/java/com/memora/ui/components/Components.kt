@@ -37,141 +37,173 @@ fun MemoryCard(
 ) {
     val context = LocalContext.current
     
-    // Launch logic
-    val onCardClick = {
-        try {
-            val intent = if (item.contentText.contains("http") || item.contentText.contains("www.")) {
-                // Extract URL if it's embedded in text
-                val url = extractUrl(item.contentText)
-                Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            } else {
-                context.packageManager.getLaunchIntentForPackage(item.sourceApp)
-            }
-            
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                Toast.makeText(context, "Could not open this app", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: Exception) {
-            Toast.makeText(context, "Error opening app: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    val (appName, appIcon) = remember(item.sourceApp) {
-        if (item.sourceApp == "Clipboard") {
-            "Clipboard" to Icons.Default.Assignment
-        } else {
-            try {
-                val pm = context.packageManager
-                val info = pm.getApplicationInfo(item.sourceApp, 0)
-                pm.getApplicationLabel(info).toString() to pm.getApplicationIcon(info)
-            } catch (e: Exception) {
-                item.sourceApp to android.R.drawable.sym_def_app_icon
-            }
-        }
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .clip(MaterialTheme.shapes.medium)
-            .clickable { onCardClick() }
-            .then(
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
-                } else Modifier
-            ),
+            .padding(vertical = 8.dp)
+            .clip(MaterialTheme.shapes.large)
+            .clickable { handleCardClick(context, item) },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+            containerColor = Color(0xFF001F3F).copy(alpha = 0.9f) // luxury navy
         ),
         border = androidx.compose.foundation.BorderStroke(
-            0.5.dp, 
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+            1.dp, 
+            Color(0xFFFFD700).copy(alpha = 0.4f) // gold border
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column {
+            // Header: Category & Time
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (appIcon is ImageVector) {
-                        Icon(
-                            imageVector = appIcon,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primaryContainer)
-                                .padding(4.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    } else {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(appIcon)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
+                Surface(
+                    shape = CircleShape,
+                    color = Color(0xFFFFD700).copy(alpha = 0.15f),
+                    border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFFFD700).copy(alpha = 0.5f))
+                ) {
                     Text(
-                        text = appName,
+                        text = item.category?.uppercase() ?: "GENERAL",
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
+                        color = Color(0xFFFFD700),
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
                     )
                 }
                 
                 Text(
                     text = formatTimestamp(item.timestamp),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color.White.copy(alpha = 0.5f)
                 )
             }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = item.contentText,
-                style = MaterialTheme.typography.bodyLarge,
-                lineHeight = 22.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            
-            if (item.tags.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    item.tags.forEach { tag ->
-                        Surface(
-                            shape = MaterialTheme.shapes.small,
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            tonalElevation = 2.dp
-                        ) {
-                            Text(
-                                text = "#$tag",
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
+
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+            ) {
+                // Thumbnail
+                if (!item.thumbnailUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(item.thumbnailUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(MaterialTheme.shapes.medium)
+                            .background(Color.Black.copy(alpha = 0.2f)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.contentText,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        lineHeight = 20.sp
+                    )
+                    
+                    if (!item.description.isNullOrEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = item.description!!,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.7f),
+                            maxLines = 3,
+                            lineHeight = 16.sp
+                        )
                     }
                 }
             }
+            
+            // Footer: App Source
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black.copy(alpha = 0.1f))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Assignment,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = Color(0xFFFFD700).copy(alpha = 0.7f)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "captured from ${item.sourceApp}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.6f)
+                )
+            }
         }
+    }
+}
+
+@Composable
+fun IntelligenceHeader(recapCount: Int) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        shape = MaterialTheme.shapes.large,
+        color = Color(0xFFFFD700).copy(alpha = 0.05f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.2f))
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Daily Recap",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color(0xFFFFD700),
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = "You captured $recapCount memories today.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+            }
+            // Smart Icon
+            Surface(
+                shape = CircleShape,
+                color = Color(0xFFFFD700),
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text("AI", fontWeight = FontWeight.Black, fontSize = 12.sp, color = Color(0xFF001F3F))
+                }
+            }
+        }
+    }
+}
+
+private fun handleCardClick(context: android.content.Context, item: MemoryItem) {
+    try {
+        val url = if (item.contentText.contains("http") || item.contentText.contains("www.")) {
+             extractUrl(item.contentText)
+        } else item.metadata ?: return
+        
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        Toast.makeText(context, "Cannot open: ${e.message}", Toast.LENGTH_SHORT).show()
     }
 }
 

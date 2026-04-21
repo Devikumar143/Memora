@@ -40,16 +40,28 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+            // New Intelligence Header
+            val todayMemories = searchResults.count { 
+                val cal = Calendar.getInstance()
+                cal.timeInMillis = it.timestamp
+                val today = Calendar.getInstance()
+                cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+            }
+            IntelligenceHeader(recapCount = todayMemories)
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChanged(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search memories & images...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                placeholder = { Text("Search your Brain...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFFFFD700)) },
                 shape = MaterialTheme.shapes.medium,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                    focusedBorderColor = Color(0xFFFFD700),
+                    unfocusedBorderColor = Color(0xFFFFD700).copy(alpha = 0.3f),
+                    textColor = Color.White
                 )
             )
             
@@ -77,19 +89,20 @@ fun MainScreen(
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
                         } else null,
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            selectedLabelColor = MaterialTheme.colorScheme.primary
+                            selectedContainerColor = Color(0xFFFFD700).copy(alpha = 0.2f),
+                            selectedLabelColor = Color(0xFFFFD700),
+                            labelColor = Color.White.copy(alpha = 0.6f)
                         )
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = if (searchQuery.isBlank() && selectedFilter == null) "Recent Memories" else "Discovery",
+                text = "Discovery",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
+                color = Color(0xFFFFD700),
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
             )
             
