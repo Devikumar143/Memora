@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import com.memora.R
 import com.memora.ui.components.IntelligenceHeader
 import com.memora.ui.viewmodel.SearchViewModel
 import java.util.Calendar
@@ -26,14 +28,37 @@ fun MainScreen(
     val searchResults by viewModel.searchResults.collectAsState()
 
     Scaffold(
+        containerColor = Color(0xFF001F3F), // Full Navy background
         topBar = {
             TopAppBar(
-                title = { Text("Memora") },
+                title = { 
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(id = R.drawable.app_logo_premium),
+                            contentDescription = "Memora Logo",
+                            modifier = Modifier.size(32.dp).clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Memora",
+                            color = Color(0xFFFFD700),
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Black,
+                            letterSpacing = 2.sp
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = { viewModel.clearAll() }) {
-                        Text("Clear", color = MaterialTheme.colorScheme.error)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.filled.Delete,
+                            contentDescription = "Clear All",
+                            tint = Color.White.copy(alpha = 0.4f)
+                        )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF001F3F)
+                )
             )
         }
     ) { padding ->
@@ -134,20 +159,43 @@ fun EmptyStateView() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
+            .padding(top = 60.dp),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
     ) {
+        Surface(
+            shape = CircleShape,
+            color = Color(0xFFFFD700).copy(alpha = 0.05f),
+            modifier = Modifier.size(120.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.2f))
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = Color(0xFFFFD700).copy(alpha = 0.3f)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
         Text(
-            text = "No memories yet!",
-            style = MaterialTheme.typography.headlineSmall
+            text = "Your Second Brain is Ready",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color(0xFFFFD700),
+            fontWeight = FontWeight.Bold
         )
+        
         Spacer(modifier = Modifier.height(8.dp))
+        
         Text(
-            text = "Try copying some text or waiting for a notification to arrive.",
+            text = "Copy a link or take a screenshot\nto begin indexing your life.",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = Color.White.copy(alpha = 0.5f),
+            lineHeight = 20.sp
         )
     }
 }

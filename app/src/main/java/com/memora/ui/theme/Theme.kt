@@ -6,16 +6,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val GoldenDarkColorScheme = darkColorScheme(
-    primary = Color(0xFFFBBF24), // Amber Gold
-    secondary = Color(0xFFF59E0B), // Darker Gold
-    tertiary = Color(0xFF6366F1), // Indigo accent
-    background = Color(0xFF0F172A), // Deep Midnight Navy
-    surface = Color(0xFF1E293B), // Slate Navy
-    onPrimary = Color(0xFF451A03),
+    primary = Color(0xFFFFD700),    // Metallic Gold
+    secondary = Color(0xFFDAA520),  // Goldenrod
+    tertiary = Color(0xFFFFEDBA),   // Champagne
+    background = Color(0xFF001F3F), // Midnight Navy
+    surface = Color(0xFF002B5B),    // Imperial Navy
+    onPrimary = Color(0xFF001F3F),
     onBackground = Color(0xFFF8FAFC),
     onSurface = Color(0xFFF8FAFC),
-    surfaceVariant = Color(0xFF334155),
-    onSurfaceVariant = Color(0xFFCBD5E1)
+    surfaceVariant = Color(0xFF003366),
+    onSurfaceVariant = Color(0xFFB0B0B0)
 )
 
 private val LightColorScheme = lightColorScheme(
