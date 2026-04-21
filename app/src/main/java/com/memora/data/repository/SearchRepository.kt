@@ -12,11 +12,11 @@ class SearchRepository @Inject constructor(
 ) {
     val allMemories: Flow<List<MemoryItem>> = memoryDao.getAllMemories()
 
-    fun search(query: String): Flow<List<MemoryItem>> {
-        return if (query.isBlank()) {
-            allMemories
-        } else {
-            memoryDao.searchMemories(query)
+    fun search(query: String, filter: String? = null): Flow<List<MemoryItem>> {
+        return when {
+            query.isBlank() && filter == null -> allMemories
+            query.isBlank() && filter != null -> memoryDao.filterByType(filter)
+            else -> memoryDao.searchMemories(query) // Simple search for now, could be improved to intersect
         }
     }
 

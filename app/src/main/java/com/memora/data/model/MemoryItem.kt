@@ -14,6 +14,7 @@ data class MemoryItem(
     val contentType: String, // notification, clipboard, screenshot, file
     val timestamp: Long = System.currentTimeMillis(),
     val tags: List<String> = emptyList(),
+    val extractedText: String? = null, // OCR text result
     val metadata: String? = null // JSON string
 )
 

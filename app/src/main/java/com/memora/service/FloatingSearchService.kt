@@ -43,6 +43,10 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.memora.ui.theme.MemoraTheme
 import dagger.hilt.android.AndroidEntryPoint
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import org.jsoup.Jsoup
 
 @AndroidEntryPoint
 class FloatingSearchService : Service() {
@@ -142,15 +146,35 @@ class FloatingSearchService : Service() {
 
     private fun saveScreenshotMemory(name: String, path: String) {
         serviceScope.launch {
-            // Check if already captured (simple deduplication)
-            val item = MemoryItem(
-                contentText = "Captured Screenshot: $name",
-                sourceApp = "System",
-                contentType = "screenshot",
-                tags = listOf("screenshot", "image")
-            )
-            memoryDao.insertMemory(item)
-            Log.d("Memora", "Saved screenshot memory: $path")
+            try {
+                val image = InputImage.fromFilePath(this@FloatingSearchService, android.net.Uri.fromFile(java.io.File(path)))
+                val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+                
+                recognizer.process(image)
+                    .addOnSuccessListener { visionText ->
+                        val extractedText = visionText.text
+                        serviceScope.launch {
+                            val item = MemoryItem(
+                                contentText = "Screenshot: $name",
+                                sourceApp = "System",
+                                contentType = "screenshot",
+                                tags = listOf("screenshot", "image"),
+                                extractedText = extractedText
+                            )
+                            memoryDao.insertMemory(item)
+                            Log.d("Memora", "Saved screenshot with OCR text: ${extractedText.take(50)}...")
+                        }
+                    }
+            } catch (e: Exception) {
+                Log.e("Memora", "OCR Failed: ${e.message}")
+                val item = MemoryItem(
+                    contentText = "Screenshot: $name",
+                    sourceApp = "System",
+                    contentType = "screenshot",
+                    tags = listOf("screenshot", "image")
+                )
+                memoryDao.insertMemory(item)
+            }
         }
     }
 
@@ -168,14 +192,32 @@ class FloatingSearchService : Service() {
 
     private fun saveClipboardMemory(text: String) {
         serviceScope.launch {
+            var displayTitle = text
+            val tags = mutableListOf("copied")
+            
+            // Check if it's a URL
+            if (text.startsWith("http") || text.contains("www.")) {
+                tags.add("link")
+                try {
+                    val doc = Jsoup.connect(text).get()
+                    val title = doc.title()
+                    if (title.isNotEmpty()) {
+                        displayTitle = title
+                    }
+                } catch (e: Exception) {
+                    Log.e("Memora", "Link enrichment failed: ${e.message}")
+                }
+            }
+
             val item = MemoryItem(
-                contentText = text,
+                contentText = displayTitle,
                 sourceApp = "Clipboard",
                 contentType = "clipboard",
-                tags = listOf("copied")
+                tags = tags,
+                metadata = if (displayTitle != text) text else null // Store raw URL in metadata if enriched
             )
             memoryDao.insertMemory(item)
-            Log.d("Memora", "Saved clipboard memory: $text")
+            Log.d("Memora", "Saved clipboard memory: $displayTitle")
         }
     }
 
