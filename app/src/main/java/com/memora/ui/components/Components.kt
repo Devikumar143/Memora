@@ -6,13 +6,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -24,7 +25,6 @@ import coil.request.ImageRequest
 import com.memora.data.model.MemoryItem
 import java.text.SimpleDateFormat
 import java.util.*
-
 @Composable
 fun MemoryCard(
     item: MemoryItem,
@@ -62,9 +62,9 @@ fun MemoryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (appIcon is Icons.Default) {
+                    if (appIcon is ImageVector) {
                         Icon(
-                            imageVector = Icons.Default.Assignment,
+                            imageVector = appIcon,
                             contentDescription = null,
                             modifier = Modifier
                                 .size(24.dp)
