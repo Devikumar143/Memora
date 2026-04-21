@@ -53,24 +53,20 @@ fun MemoryCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clip(MaterialTheme.shapes.large)
+            .padding(vertical = 12.dp)
+            .clip(MaterialTheme.shapes.extraLarge)
             .clickable { handleCardClick(context, item) },
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF000000) // Pure Black
-        ),
-        border = androidx.compose.foundation.BorderStroke(
-            0.5.dp, 
-            Color(0xFF4A4A4A) // Hairline Grey
+            containerColor = Color(0xFF121212) // Subtle Carbon shift
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column {
+        Column(modifier = Modifier.padding(4.dp)) {
             // Header: App Label & Time
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -83,16 +79,16 @@ fun MemoryCard(
                                 .build(),
                             contentDescription = null,
                             modifier = Modifier
-                                .size(16.dp)
+                                .size(14.dp)
                                 .clip(CircleShape),
-                            alpha = 0.4f // Keep it Zen
+                            alpha = 0.2f // Ultra muted
                         )
                     } else if (appIcon is androidx.compose.ui.graphics.vector.ImageVector) {
                          Icon(
                             imageVector = appIcon,
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = Color.White.copy(alpha = 0.4f)
+                            modifier = Modifier.size(14.dp),
+                            tint = Color.White.copy(alpha = 0.2f)
                         )
                     }
                     
@@ -101,15 +97,15 @@ fun MemoryCard(
                     Text(
                         text = appName.lowercase(),
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.White.copy(alpha = 0.4f),
-                        letterSpacing = 0.5.sp
+                        color = Color.White.copy(alpha = 0.2f),
+                        letterSpacing = 1.sp
                     )
                 }
                 
                 Text(
                     text = formatTimestamp(item.timestamp),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.2f)
+                    color = Color.White.copy(alpha = 0.1f)
                 )
             }
 
@@ -181,20 +177,21 @@ fun IntelligenceHeader(recapCount: Int) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 24.dp)
+            .padding(vertical = 32.dp)
     ) {
         Text(
-            text = "Your Second Brain",
+            text = "your brain",
             style = MaterialTheme.typography.headlineMedium,
             color = Color.White,
-            fontWeight = FontWeight.Light,
-            letterSpacing = (-0.5).sp
+            fontWeight = FontWeight.ExtraLight,
+            letterSpacing = 1.sp
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "Today: $recapCount memories indexed.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.White.copy(alpha = 0.4f)
+            text = "$recapCount recently captured",
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.White.copy(alpha = 0.15f),
+            letterSpacing = 0.5.sp
         )
     }
 }

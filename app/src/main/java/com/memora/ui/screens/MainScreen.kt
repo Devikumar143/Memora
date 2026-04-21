@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.foundation.Canvas
 import com.memora.R
 import com.memora.ui.components.IntelligenceHeader
 import com.memora.ui.viewmodel.SearchViewModel
@@ -39,28 +40,20 @@ fun MainScreen(
         topBar = {
             TopAppBar(
                 title = { 
-                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = R.drawable.app_logo_zen),
-                            contentDescription = "Memora Zen Logo",
-                            modifier = Modifier.size(24.dp).clip(CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "memora",
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Light,
-                            letterSpacing = 2.sp
-                        )
-                    }
+                    Text(
+                        text = "memora",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraLight,
+                        letterSpacing = 4.sp
+                    )
                 },
                 actions = {
                     IconButton(onClick = { viewModel.clearAll() }) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Clear All",
-                            tint = Color.White.copy(alpha = 0.2f)
+                            tint = Color.White.copy(alpha = 0.05f)
                         )
                     }
                 },
@@ -87,18 +80,20 @@ fun MainScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
+            TextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChanged(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("search...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.White.copy(alpha = 0.3f)) },
-                shape = MaterialTheme.shapes.medium,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color.White.copy(alpha = 0.5f),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                placeholder = { Text("Search...", color = Color.White.copy(alpha = 0.1f), style = MaterialTheme.typography.bodyLarge) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.White.copy(alpha = 0.1f)) },
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.White.copy(alpha = 0.2f),
+                    unfocusedIndicatorColor = Color.White.copy(alpha = 0.05f),
+                    cursorColor = Color.White.copy(alpha = 0.2f),
                     textColor = Color.White
-                )
+                ),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Light, letterSpacing = 1.sp)
             )
             
             Spacer(modifier = Modifier.height(12.dp))
