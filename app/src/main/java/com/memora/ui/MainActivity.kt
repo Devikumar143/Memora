@@ -63,9 +63,20 @@ class MainActivity : ComponentActivity() {
             startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
         }
 
-        // Post Notifications (Android 13+)
+        // Media & Storage permissions for Screenshots
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+            requestPermissions(
+                arrayOf(
+                    android.Manifest.permission.POST_NOTIFICATIONS,
+                    android.Manifest.permission.READ_MEDIA_IMAGES
+                ), 101
+            )
+        } else {
+            requestPermissions(
+                arrayOf(
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE
+                ), 101
+            )
         }
     }
 }

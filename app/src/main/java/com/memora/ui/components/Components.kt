@@ -75,11 +75,22 @@ fun MemoryCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { onCardClick() },
+            .padding(vertical = 6.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .clickable { onCardClick() }
+            .then(
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
+                } else Modifier
+            ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            0.5.dp, 
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -137,7 +148,8 @@ fun MemoryCard(
             Text(
                 text = item.contentText,
                 style = MaterialTheme.typography.bodyLarge,
-                lineHeight = 20.sp
+                lineHeight = 22.sp,
+                color = MaterialTheme.colorScheme.onSurface
             )
             
             if (item.tags.isNotEmpty()) {

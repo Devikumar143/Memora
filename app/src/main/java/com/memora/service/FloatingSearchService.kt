@@ -89,6 +89,69 @@ class FloatingSearchService : Service() {
         }
     }
 
+    private fun setupScreenshotObserver() {
+        screenshotObserver = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean, uri: android.net.Uri?) {
+                super.onChange(selfChange, uri)
+                // When MediaStore changes, we check for new screenshots
+                serviceScope.launch {
+                    detectNewScreenshot()
+                }
+            }
+        }
+        contentResolver.registerContentObserver(
+            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            true,
+            screenshotObserver
+        )
+    }
+
+    private suspend fun detectNewScreenshot() {
+        val projection = arrayOf(
+            android.provider.MediaStore.Images.Media._ID,
+            android.provider.MediaStore.Images.Media.DISPLAY_NAME,
+            android.provider.MediaStore.Images.Media.DATA,
+            android.provider.MediaStore.Images.Media.DATE_ADDED
+        )
+        
+        val selection = "${android.provider.MediaStore.Images.Media.DISPLAY_NAME} LIKE ?"
+        val selectionArgs = arrayOf("%Screenshot%")
+        val sortOrder = "${android.provider.MediaStore.Images.Media.DATE_ADDED} DESC"
+
+        contentResolver.query(
+            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            sortOrder
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val name = cursor.getString(cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DISPLAY_NAME))
+                val path = cursor.getString(cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA))
+                val dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATE_ADDED))
+                
+                // Only process if it's new (thin window of 5 seconds)
+                if (System.currentTimeMillis() / 1000 - dateAdded < 10) {
+                    saveScreenshotMemory(name, path)
+                }
+            }
+        }
+    }
+
+    private fun saveScreenshotMemory(name: String, path: String) {
+        serviceScope.launch {
+            // Check if already captured (simple deduplication)
+            val item = MemoryItem(
+                contentText = "Captured Screenshot: $name",
+                sourceApp = "System",
+                contentType = "screenshot",
+                tags = listOf("screenshot", "image")
+            )
+            memoryDao.insertMemory(item)
+            Log.d("Memora", "Saved screenshot memory: $path")
+        }
+    }
+
     private fun setupClipboardListener() {
         clipboardManager.addPrimaryClipChangedListener {
             val clipData = clipboardManager.primaryClip
