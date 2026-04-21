@@ -120,8 +120,9 @@ class FloatingSearchService : Service() {
             android.provider.MediaStore.Images.Media.DATE_ADDED
         )
         
-        val selection = "${android.provider.MediaStore.Images.Media.DISPLAY_NAME} LIKE ?"
-        val selectionArgs = arrayOf("%Screenshot%")
+        // Improved selection: Look for 'Screenshots' in the file path or name
+        val selection = "${android.provider.MediaStore.Images.Media.DATA} LIKE ?"
+        val selectionArgs = arrayOf("%Screenshots%")
         val sortOrder = "${android.provider.MediaStore.Images.Media.DATE_ADDED} DESC"
 
         contentResolver.query(
@@ -136,8 +137,8 @@ class FloatingSearchService : Service() {
                 val path = cursor.getString(cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA))
                 val dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATE_ADDED))
                 
-                // Only process if it's new (thin window of 5 seconds)
-                if (System.currentTimeMillis() / 1000 - dateAdded < 10) {
+                // Only process if it's new (window of 15 seconds for reliability)
+                if (System.currentTimeMillis() / 1000 - dateAdded < 15) {
                     saveScreenshotMemory(name, path)
                 }
             }
@@ -274,6 +275,15 @@ class FloatingSearchService : Service() {
     }
 
     private fun openFullSearch() {
+        // Smart Poll: Check clipboard when user interacts with floating button
+        val clipData = clipboardManager.primaryClip
+        if (clipData != null && clipData.itemCount > 0) {
+            val text = clipData.getItemAt(0).text?.toString()
+            if (!text.isNullOrEmpty()) {
+                saveClipboardMemory(text)
+            }
+        }
+
         // Logic to expand overlay or launch activity
         val intent = Intent(this, com.memora.ui.MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

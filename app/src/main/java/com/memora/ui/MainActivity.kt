@@ -36,6 +36,11 @@ class MainActivity : ComponentActivity() {
         startFloatingService()
     }
 
+    override fun onResume() {
+        super.onResume()
+        startFloatingService()
+    }
+
     private fun startFloatingService() {
         if (Settings.canDrawOverlays(this)) {
             val intent = Intent(this, com.memora.service.FloatingSearchService::class.java)
