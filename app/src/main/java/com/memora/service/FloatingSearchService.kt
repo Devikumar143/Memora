@@ -246,12 +246,13 @@ class FloatingSearchService : Service() {
         }
 
         val savedStateRegistryOwner = object : SavedStateRegistryOwner {
-            val controller = SavedStateRegistryController.create(this)
             override val lifecycle: Lifecycle get() = lifecycleOwner.lifecycle
+            private val controller = SavedStateRegistryController.create(this).apply {
+                performAttach()
+                performRestore(null)
+            }
             override val savedStateRegistry: SavedStateRegistry get() = controller.savedStateRegistry
         }
-        savedStateRegistryOwner.controller.performAttach()
-        savedStateRegistryOwner.controller.performRestore(null)
 
         composeView.setViewTreeLifecycleOwner(lifecycleOwner)
         composeView.setViewTreeViewModelStoreOwner(viewModelStoreOwner)
