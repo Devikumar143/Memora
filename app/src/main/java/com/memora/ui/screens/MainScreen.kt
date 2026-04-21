@@ -21,6 +21,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import android.content.Intent
 import com.memora.R
 import com.memora.ui.components.IntelligenceHeader
 import com.memora.ui.viewmodel.SearchViewModel
@@ -32,8 +37,26 @@ import com.memora.ui.components.MemoryCard
 fun MainScreen(
     viewModel: SearchViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
+    
+    // Permission state
+    var isNotificationPermissionGranted by remember { 
+        mutableStateOf(NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)) 
+    }
+
+    // Check permission on resume
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                isNotificationPermissionGranted = NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Scaffold(
         containerColor = Color(0xFF000000), // Pure Black background
@@ -67,8 +90,41 @@ fun MainScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 24.dp) // More whitespace
         ) {
+            if (!isNotificationPermissionGranted) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    color = Color.White.copy(alpha = 0.03f),
+                    border = androidx.compose.foundation.BorderStroke(0.5.dp, Color.White.copy(alpha = 0.1f)),
+                    onClick = {
+                        context.startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                           text = "notification access required for second brain",
+                           style = MaterialTheme.typography.labelMedium,
+                           color = Color.White.copy(alpha = 0.4f),
+                           modifier = Modifier.weight(1f),
+                           letterSpacing = 0.5.sp
+                        )
+                        Text(
+                            text = "grant",
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+            }
+
             // New Intelligence Header
             val todayMemories = searchResults.count { 
                 val cal = Calendar.getInstance()

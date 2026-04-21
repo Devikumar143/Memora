@@ -30,14 +30,33 @@ class MemoraNotificationService : NotificationListenerService() {
             val content = if (title != null) "$title: $text" else text
             
             serviceScope.launch {
+                // Smart Tagger logic for Notifications
+                var category = "Alerts"
+                val lowerPackage = packageName.lowercase()
+                val lowerContent = content.lowercase()
+
+                when {
+                    lowerPackage.contains("whatsapp") || lowerPackage.contains("instagram") || 
+                    lowerPackage.contains("facebook") || lowerPackage.contains("messenger") || 
+                    lowerPackage.contains("discord") || lowerPackage.contains("social") -> category = "Social"
+                    
+                    lowerPackage.contains("amazon") || lowerPackage.contains("shopping") || 
+                    lowerPackage.contains("flipkart") || lowerPackage.contains("shop") -> category = "Shopping"
+                    
+                    lowerPackage.contains("chrome") || lowerPackage.contains("browser") || 
+                    lowerPackage.contains("research") || lowerContent.contains("http") -> category = "Research"
+                }
+
                 val item = MemoryItem(
                     contentText = content,
                     sourceApp = packageName,
                     contentType = "notification",
+                    category = category,
+                    description = if (content.length > 100) content.take(97) + "..." else null,
                     tags = extractSimpleTags(content)
                 )
                 database.memoryDao().insertMemory(item)
-                Log.d("Memora", "Saved notification from $packageName")
+                Log.d("Memora", "Smart Saved notification from $packageName as $category")
             }
         }
     }
