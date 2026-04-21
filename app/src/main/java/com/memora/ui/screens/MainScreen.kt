@@ -11,8 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.memora.ui.components.MemoryCard
+import androidx.compose.ui.graphics.Color
+import com.memora.ui.components.IntelligenceHeader
 import com.memora.ui.viewmodel.SearchViewModel
+import java.util.Calendar
+import com.memora.ui.components.MemoryCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
