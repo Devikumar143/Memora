@@ -53,6 +53,7 @@ class FloatingSearchService : Service() {
 
     private lateinit var windowManager: WindowManager
     private var floatingView: View? = null
+    private lateinit var screenshotObserver: android.database.ContentObserver
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -63,6 +64,7 @@ class FloatingSearchService : Service() {
         
         startForegroundService()
         setupClipboardListener()
+        setupScreenshotObserver()
         showFloatingButton()
     }
 
