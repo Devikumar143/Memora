@@ -1,13 +1,26 @@
 package com.memora.ui.components
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.memora.data.model.MemoryItem
 import java.text.SimpleDateFormat
 import java.util.*
@@ -17,6 +30,21 @@ fun MemoryCard(
     item: MemoryItem,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
+    val (appName, appIcon) = remember(item.sourceApp) {
+        if (item.sourceApp == "Clipboard") {
+            "Clipboard" to Icons.Default.Assignment
+        } else {
+            try {
+                val pm = context.packageManager
+                val info = pm.getApplicationInfo(item.sourceApp, 0)
+                pm.getApplicationLabel(info).toString() to pm.getApplicationIcon(info)
+            } catch (e: Exception) {
+                item.sourceApp to android.R.drawable.sym_def_app_icon
+            }
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -33,12 +61,42 @@ fun MemoryCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = item.sourceApp.uppercase(),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (appIcon is Icons.Default) {
+                        Icon(
+                            imageVector = Icons.Default.Assignment,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .padding(4.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(appIcon)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    Text(
+                        text = appName,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                
                 Text(
                     text = formatTimestamp(item.timestamp),
                     style = MaterialTheme.typography.labelSmall,

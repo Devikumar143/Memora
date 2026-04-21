@@ -93,7 +93,7 @@ fun EmptyStateView() {
         Text(
             text = "Try copying some text or waiting for a notification to arrive.",
             style = MaterialTheme.typography.bodyMedium,
-            textAlign = androidx.compose.ui.textAlign.Center,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
