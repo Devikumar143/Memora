@@ -36,7 +36,20 @@ fun MemoryCard(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
-    
+    val (appName, appIcon) = remember(item.sourceApp) {
+        if (item.sourceApp == "Clipboard") {
+            "Clipboard" to Icons.Default.Assignment
+        } else {
+            try {
+                val pm = context.packageManager
+                val info = pm.getApplicationInfo(item.sourceApp, 0)
+                pm.getApplicationLabel(info).toString() to pm.getApplicationIcon(info)
+            } catch (e: Exception) {
+                item.sourceApp to android.R.drawable.sym_def_app_icon
+            }
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -53,7 +66,7 @@ fun MemoryCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column {
-            // Header: Category & Time
+            // Header: App Label & Time
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -61,12 +74,37 @@ fun MemoryCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = item.category?.lowercase() ?: "general",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.4f),
-                    letterSpacing = 0.5.sp
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                   if (appIcon is android.graphics.drawable.Drawable) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(appIcon)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clip(CircleShape),
+                            alpha = 0.4f // Keep it Zen
+                        )
+                    } else if (appIcon is androidx.compose.ui.graphics.vector.ImageVector) {
+                         Icon(
+                            imageVector = appIcon,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = Color.White.copy(alpha = 0.4f)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    Text(
+                        text = appName.lowercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White.copy(alpha = 0.4f),
+                        letterSpacing = 0.5.sp
+                    )
+                }
                 
                 Text(
                     text = formatTimestamp(item.timestamp),
@@ -118,26 +156,21 @@ fun MemoryCard(
                 }
             }
             
-            // Footer: App Source
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.1f))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Assignment,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = Color(0xFFFFD700).copy(alpha = 0.7f)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "captured from ${item.sourceApp}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.6f)
-                )
+            // Footer: Category
+            if (!item.category.isNullOrEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White.copy(alpha = 0.03f))
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "categorized as ${item.category?.lowercase()}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White.copy(alpha = 0.2f)
+                    )
+                }
             }
         }
     }
