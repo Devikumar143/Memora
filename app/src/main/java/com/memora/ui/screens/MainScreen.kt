@@ -37,13 +37,21 @@ fun MainScreen(
         topBar = {
             TopAppBar(
                 title = { 
-                    Text(
-                        text = "memora",
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Light,
-                        letterSpacing = 2.sp
-                    )
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(id = R.drawable.app_logo_zen),
+                            contentDescription = "Memora Zen Logo",
+                            modifier = Modifier.size(24.dp).clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "memora",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Light,
+                            letterSpacing = 2.sp
+                        )
+                    }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.clearAll() }) {
