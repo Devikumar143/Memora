@@ -23,10 +23,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.memora.ui.theme.MemoraTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -76,9 +78,9 @@ class FloatingSearchService : Service() {
             }
         }
 
-        ViewTreeLifecycleOwner.set(composeView, lifecycleOwner)
-        ViewTreeViewModelStoreOwner.set(composeView, viewModelStoreOwner)
-        ViewTreeSavedStateRegistryOwner.set(composeView, savedStateRegistryOwner)
+        composeView.setViewTreeLifecycleOwner(lifecycleOwner)
+        composeView.setViewTreeViewModelStoreOwner(viewModelStoreOwner)
+        composeView.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
